@@ -28,7 +28,19 @@ void battCheck(void){
         battStat = 1;           // Raises low batt flag
     } else {
         battStat = 0;           // Continue normal operation
-}   }
+    }
+
+    switch(battStat){
+        case 0:
+            P1OUT |=  BIT1; // Turns on the green LED
+            P1OUT &= ~BIT0; // Turns off the red LED
+        break;
+        case 1:
+            P1OUT |=  BIT0; // Turns on the red LED
+            P1OUT &= ~BIT1; // Turns off the green LED
+        break;
+    }
+}
 
 
 
@@ -45,14 +57,6 @@ void main(void){
     ledInit();                  // Initializes the LEDs
 
     while(1){
-        battCheck();            // Returns the battery voltage
-        switch(battStat){
-            case 0:
-                P1OUT |=  BIT1; // Turns on the green LED
-                P1OUT &= ~BIT0; // Turns off the red LED
-            break;
-            case 1:
-                P1OUT |=  BIT0; // Turns on the red LED
-                P1OUT &= ~BIT1; // Turns off the green LED
-            break;
-}   }   }
+        battCheck();
+    }
+}
