@@ -1,43 +1,60 @@
 /*
- *            main.c
- *   Created on:  November 7, 2017
- *  Last Edited:  November 7, 2017
+ *            battCheck.c
+ *
+ *   Created on:  November 12, 2017
+ *  Last Edited:  November 12, 2017
  *       Author:  Nick Gorab
- *        Board:  MSP430F5529
+ *        Board:  MSP430FR5994
  */
 
-#include <msp430.h>
-#include <I2C.h>
+#include "system.h"
 
-int xAccel;
-int yAccel;
-int zAccel;
+int battStat = 0;
 
-unsigned char slaveAddr = 0x68;
-unsigned char TX_Data[2];
-unsigned char RX_Data[6];
 
-const unsigned char accel = 0x3B;
-const unsigned char gyro  = 0xB5; // Not correct
 
+/***********************\
+ *                     *
+ * Batt Check Function *
+ *                     *
+\***********************/
+
+void battCheck(void){
+    ADC12CTL0 |= ADC12ENC       // Enables ADC
+              |  ADC12SC;       // Takes a reading
+    if(ADC12MEM0 < 3105) {      // If battry voltage < 2.5 V
+        battStat = 1;           // Raises low batt flag
+    } else {
+        battStat = 0;           // Continue normal operation
+    }
+
+    switch(battStat){
+        case 0:
+            P1OUT |=  BIT1; // Turns on the green LED
+            P1OUT &= ~BIT0; // Turns off the red LED
+        break;
+        case 1:
+            P1OUT |=  BIT0; // Turns on the red LED
+            P1OUT &= ~BIT1; // Turns off the green LED
+        break;
+    }
+}
+
+
+
+/***********************\
+ *                     *
+ *    Main Function    *
+ *                     *
+\***********************/
 
 void main(void){
-    WDTCTL = WDTPW + WDTHOLD;
-    i2cInit();
-    TX_Data[0] = 0x6B;
-    TX_Data[1] = 0x00;
-    i2cMultipleWrite(slaveAddr, TX_Data, 2);
+    WDTCTL = WDTPW | WDTHOLD;   // Disables Watchdog Timer
+    PM5CTL0 &= ~LOCKLPM5;       // Disables high-impedance mode
+    adcInit();                  // Initializes the ADC
+    ledInit();                  // Initializes the LEDs
+
     while(1){
-        i2cSingleWrite(slaveAddr, accel);
-        i2cMultipleRead(slaveAddr, RX_Data, 6);
-
-        xAccel  = RX_Data[5] << 8;
-        xAccel |= RX_Data[4];
-        yAccel  = RX_Data[3] << 8;
-        yAccel |= RX_Data[2];
-        zAccel  = RX_Data[1] << 8;
-        zAccel |= RX_Data[0];
-
-        __delay_cycles(200);
+        battCheck();
     }
 }
