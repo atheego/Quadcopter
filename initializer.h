@@ -22,6 +22,7 @@ void adcInit();
 void ledInit();
 void timerInit();
 void i2cInit();
+void pidInit();
 
 
 #endif /* INITIALIZER_H_ */

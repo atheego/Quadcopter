@@ -11,6 +11,7 @@
 #define SYSTEM_H_
 
 #include <msp430.h>
+#include <stdio.h>
 #include "I2C.h"
 #include "initializer.h"
 #include "mpu6050.h"

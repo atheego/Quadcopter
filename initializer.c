@@ -40,8 +40,7 @@ void adcInit(void){
 \************************/
 
 void ledInit(void){
-    P1DIR |= BIT0       // Red LED
-          |  BIT1;      // Green LED
+    P1DIR |= BIT0;       // Red LED. Real exciting function, I know.
 }
 
 
@@ -52,7 +51,7 @@ void ledInit(void){
 *                        *
 \************************/
 
-void timerInit(void){
+void timerBInit(void){
     TB0CCTL0 = CCIE;        // Enables timer interrupts
     TB0CTL   = TBSSEL_1     // SMCLK
              + MC_1;        // Runs in up-mode
@@ -64,6 +63,18 @@ void timerInit(void){
 }
 
 
+
+/************************\
+*                        *
+* TIMER_A Initialization *
+*                        *
+\************************/
+
+void timerAInit(void){
+    TA0CTL   = TASSEL_2 + MC_2 + ID_3;  // SMCLK, Up-Mode, Predivider 8
+    TA0CCTL1 = OUTMOD_3;                // Reset/Set behavior
+    TA0CCR1  = 32767;                   // CCR1 value for 50% duty
+}
 
 /************************\
 *                        *
@@ -83,4 +94,22 @@ void i2cInit(){
     UCB2BRW    = 0x0008;    // SMCLK/8
     UCB2CTLW1 |= UCASTP_2;  // Sends stop bit when UCTBCNT is reached
     UCB2CTL1  &= ~UCSWRST;  // Starts state machine
+}
+
+
+
+/************************\
+*                        *
+*   PID Initialization   *
+*                        *
+\************************/
+
+void pidInit(void){
+  P1DIR  |= BIT4     // Motor 1 PWM output
+         |  BIT5     // Motor 2 PWM output
+         |  BIT6     // Motor 3 PWM output
+         |  BIT7;    // Motor 4 PWM output
+  TA0CTL  = TASSEL_2
+         |  ID_0
+         |  MC_1;
 }

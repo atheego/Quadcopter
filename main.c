@@ -9,7 +9,16 @@
 
 #include "system.h"
 
-int battStat = 0;
+volatile int battStat = 0;
+volatile int Kp       = 10000;
+volatile int Ki       = 6000;
+volatile int Kd       = 350;
+volatile float error,
+               oldError,
+               iError,
+               dError,
+               dt,
+               u;
 
 
 
@@ -27,18 +36,22 @@ void battCheck(void){
     } else {
         battStat = 0;           // Continue normal operation
     }
-
     switch(battStat){
-        case 0:
-            P1OUT |=  BIT1; // Turns on the green LED
-            P1OUT &= ~BIT0; // Turns off the red LED
-        break;
-        case 1:
-            P1OUT |=  BIT0; // Turns on the red LED
-            P1OUT &= ~BIT1; // Turns off the green LED
+        case 0:                 // Battery is good
+            TA0CTL |=  MC_0     // Stops timer
+                   |   TACLR;   // Clears timer
+            P1SEL0 &= ~BIT0;    // Sets P1.0 to GPIO output
+            P1OUT   =  BIT0;    // Turns the LED on 
+        break;      
+        case 1:                 // Battery is low
+            P1SEL0  = BIT0;     // Sets P1.0 to TA0.1 control
+            TA0CTL |= MC_2;     // Starts the clock in continous mode
         break;
     }
 }
+
+
+
 
 
 
@@ -53,7 +66,7 @@ void main(void){
     PM5CTL0 &= ~LOCKLPM5;       // Disables high-impedance mode
     adcInit();                  // Initializes the ADC
     ledInit();                  // Initializes the LEDs
-
+    timerAInit();               // Initializes TIMER_A
     while(1){
         battCheck();
     }
